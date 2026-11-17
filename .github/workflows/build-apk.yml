@@ -2,18 +2,15 @@ name: Build Android APK
 
 on:
   push:
-    branches:
-      - main
-      - master
   pull_request:
-    branches:
-      - main
-      - master
   workflow_dispatch:
+
+permissions:
+  contents: write
 
 jobs:
   build-apk:
-    name: Build Debug & Release APK
+    name: Build Android APK
     runs-on: ubuntu-latest
 
     steps:
@@ -26,6 +23,14 @@ jobs:
           distribution: temurin
           java-version: "21"
 
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Accept SDK licenses and install Android 36.1 platform
+        run: |
+          yes | sdkmanager --licenses >/dev/null 2>&1 || true
+          sdkmanager "platform-tools" "platforms;android-36.1" "build-tools;36.0.0"
+
       - name: Set up Gradle 9.3.1
         uses: gradle/actions/setup-gradle@v4
         with:
@@ -36,7 +41,7 @@ jobs:
           if [ ! -f .env ] && [ -f .env.example ]; then
             cp .env.example .env
           fi
-          if [ ! -f debug.keystore ]; then
+          if [ ! -s debug.keystore ]; then
             if [ -f debug.keystore.base64 ]; then
               base64 -d debug.keystore.base64 > debug.keystore
             else
@@ -47,18 +52,41 @@ jobs:
             fi
           fi
 
-      - name: Run unit tests
-        run: gradle :app:testDebugUnitTest --no-daemon
-
       - name: Build Debug APK
-        run: gradle :app:assembleDebug --no-daemon --stacktrace
+        run: >
+          gradle :app:assembleDebug
+          --no-daemon
+          --max-workers=2
+          -Dorg.gradle.jvmargs="-Xmx3g -XX:MaxMetaspaceSize=1g -Dfile.encoding=UTF-8"
+          --stacktrace
+
+      - name: Verify generated APK
+        run: ls -lh app/build/outputs/apk/debug/*.apk
 
       - name: Upload Debug APK artifact
         uses: actions/upload-artifact@v4
         with:
           name: gestures-debug-apk
           path: app/build/outputs/apk/debug/*.apk
+          retention-days: 30
           if-no-files-found: error
+
+      - name: Publish Debug APK to GitHub Release
+        if: ${{ github.event_name == 'push' || github.event_name == 'workflow_dispatch' }}
+        continue-on-error: true
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: latest-apk
+          name: Latest Gestures APK
+          files: app/build/outputs/apk/debug/app-debug.apk
+          prerelease: false
+
+      - name: Run unit tests
+        run: >
+          gradle :app:testDebugUnitTest
+          --no-daemon
+          --max-workers=2
+          -Dorg.gradle.jvmargs="-Xmx3g -XX:MaxMetaspaceSize=1g -Dfile.encoding=UTF-8"
 
       - name: Decode Release Keystore (if configured in Secrets)
         if: ${{ secrets.KEYSTORE_BASE64 != '' && secrets.STORE_PASSWORD != '' && secrets.KEY_PASSWORD != '' }}
@@ -73,7 +101,12 @@ jobs:
           KEYSTORE_PATH: ${{ github.workspace }}/my-upload-key.jks
           STORE_PASSWORD: ${{ secrets.STORE_PASSWORD }}
           KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
-        run: gradle :app:assembleRelease --no-daemon --stacktrace
+        run: >
+          gradle :app:assembleRelease
+          --no-daemon
+          --max-workers=2
+          -Dorg.gradle.jvmargs="-Xmx3g -XX:MaxMetaspaceSize=1g -Dfile.encoding=UTF-8"
+          --stacktrace
 
       - name: Upload Release APK artifact
         if: ${{ secrets.KEYSTORE_BASE64 != '' && secrets.STORE_PASSWORD != '' && secrets.KEY_PASSWORD != '' }}
@@ -81,4 +114,5 @@ jobs:
         with:
           name: gestures-release-apk
           path: app/build/outputs/apk/release/*.apk
+          retention-days: 30
           if-no-files-found: warn
