@@ -1,11 +1,20 @@
-<div align="center">
+# تطبيق إيماءات (Gestures Android App)
 
-<img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
+تطبيق أندرويد لإيماءات الشاشة متعددة الأصابع والاختصارات السريعة، يعمل فوق أي لانشر مخصص عبر خدمة إمكانية الوصول (AccessibilityService)، الزر العائم، وحواف الشاشة.
 
-  <h1>Built with AI Studio</h2>
+## تحويل المشروع إلى APK عبر GitHub Actions
 
-  <p>The fastest path from prompt to production with Gemini.</p>
+تم تضمين ملف سير العمل جاهزاً في:
+`.github/workflows/build-apk.yml`
 
-  <a href="https://aistudio.google.com/apps">Start building</a>
+### خطوات استخراج ملف APK من GitHub:
+1. ارفع جميع ملفات المشروع (بما فيها مجلد `.github/workflows/`) إلى مستودعك على **GitHub**.
+2. انتقل إلى تبويب **Actions** في المستودع.
+3. سيبدأ سير العمل **Build Android APK** تلقائياً عند كل `push` إلى `main` أو `master` (ويمكنك تشغيله يدوياً عبر زر **Run workflow**).
+4. بعد اكتمال البناء، انزل إلى قسم **Artifacts** في صفحة التشغيل وحمّل ملف **`gestures-debug-apk`** الذي يحتوي على `app-debug.apk`.
 
-</div>
+### بناء نسخة Release موقّعة (اختياري):
+لبناء `app-release.apk` تلقائياً، أضف هذه القيم في **Settings → Secrets and variables → Actions** داخل مستودع GitHub:
+- `KEYSTORE_BASE64`: محتوى ملف `.jks` مشفراً بصيغة Base64.
+- `STORE_PASSWORD`: كلمة مرور مخزن المفاتيح.
+- `KEY_PASSWORD`: كلمة مرور المفتاح (`upload`).

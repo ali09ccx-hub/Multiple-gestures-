@@ -1,0 +1,9 @@
+<resources>
+    <string name="app_name">إيماءات</string>
+    <string name="accessibility_service_label">محرك إيماءات الشاشة</string>
+    <string name="accessibility_service_description">يمكّنك من تشغيل التطبيقات وتنفيذ اختصارات النظام عبر حواف الشاشة واللوحة العائمة متعددة الأصابع فوق أي لانشر مخصص أو تطبيق.</string>
+    <string name="tile_gesture_pad_label">لوحة الإيماءات</string>
+    <string name="nav_gestures">الإيماءات</string>
+    <string name="nav_lab">ساحة الاختبار</string>
+    <string name="nav_launcher">اللانشر والحواف</string>
+</resources>

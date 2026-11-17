@@ -1,0 +1,6 @@
+{
+  "name": "إيماءات",
+  "description": "تطبيق إيماءات شاشة ذكي واختصارات لمس متعددة الأصابع لتشغيل التطبيقات وتنفيذ أوامر النظام فوق أي لانشر مخصص",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
